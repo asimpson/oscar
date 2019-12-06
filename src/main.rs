@@ -39,24 +39,23 @@ struct Episode {
 
 impl Episode {
     fn return_episode_number(&self) -> String {
-        return self.nola_episode[6..8].to_string();
+        self.nola_episode[6..8].to_string()
     }
 
     fn return_season_number(&self) -> String {
-        return self.nola_episode[4..6].to_string();
+        self.nola_episode[4..6].to_string()
     }
 
     fn return_slug(&self) -> String {
-        return self.title.replace(" ", "-");
+        self.title.replace(" ", "-")
     }
 
     fn get_video_object(&self) -> Vec<Video> {
-        return self
-            .videos
+        self.videos
             .iter()
             .filter(|x| x.format == "mp4" && x.bitrate == Some("720p".to_string()))
             .cloned()
-            .collect();
+            .collect()
     }
 }
 
@@ -114,7 +113,7 @@ fn get_history() -> Result<String, Box<dyn std::error::Error>> {
             .to_string_lossy()
     );
     let ids = fs::read_to_string(history_path)?;
-    return Ok(ids);
+    Ok(ids)
 }
 
 fn update_history(episodes: &str) {
@@ -133,7 +132,7 @@ fn fetch_video_info() -> Result<Vec<Episode>, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
     let videos: Payload = client.get(url).send()?.json()?;
 
-    return Ok(videos.items);
+    Ok(videos.items)
 }
 
 fn main() {

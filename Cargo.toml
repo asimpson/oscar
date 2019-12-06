@@ -3,6 +3,12 @@ name = "oscar"
 version = "0.1.0"
 authors = ["Adam Simpson <adam@heysparkbox.com>"]
 edition = "2018"
+description = "A CLI application to download Sesame Street videos from PBS. Ideally run in cron or another scheduler."
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/asimpson/oscar"
+keywords = ["cli", "video", "pbs"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 reqwest = "0.9.21"
