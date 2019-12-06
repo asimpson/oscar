@@ -22,7 +22,6 @@ log = { version = "0.4.8", features = ["max_level_info"] }
 [profile.release]
 opt-level = 'z'
 debug = false
-rpath = false
 lto = true
 debug-assertions = false
 codegen-units = 1
