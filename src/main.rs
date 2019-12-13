@@ -112,8 +112,13 @@ fn get_history() -> Result<String, Box<dyn std::error::Error>> {
             .expect("Home dir is expanded.")
             .to_string_lossy()
     );
-    let ids = fs::read_to_string(history_path)?;
-    Ok(ids)
+    let ids = fs::read_to_string(history_path);
+    let history = match ids {
+        Ok(f) => f,
+        _ => "".to_string(),
+    };
+
+    Ok(history)
 }
 
 fn update_history(episodes: &str) {
