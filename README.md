@@ -1,4 +1,6 @@
 # Oscar
+[![Build Status](https://travis-ci.org/asimpson/oscar.svg?branch=master)](https://travis-ci.org/asimpson/oscar)
+
 A CLI application to download Sesame Street videos from PBS. Ideally run in cron or another scheduler.
 
 ## Example
