@@ -1,11 +1,13 @@
 extern crate log;
 extern crate reqwest;
 extern crate simple_logger;
+use log::error;
 use log::info;
 use serde::Deserialize;
 use std::fs;
 use std::io::copy;
 use std::path::PathBuf;
+use std::process;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -50,12 +52,12 @@ impl Episode {
         self.title.replace(" ", "-")
     }
 
-    fn get_video_object(&self) -> Vec<Video> {
+    fn get_video_url(&self) -> String {
         self.videos
             .iter()
             .filter(|x| x.format == "mp4" && x.bitrate == Some("720p".to_string()))
-            .cloned()
-            .collect()
+            .map(|x| x.url.to_string())
+            .fold("".to_string(), |_acc, x| x)
     }
 }
 
@@ -105,31 +107,34 @@ mod tests {
     }
 }
 
-fn get_history() -> Result<String, Box<dyn std::error::Error>> {
-    let history_path = format!(
-        "{}/.oscar_history",
-        dirs::home_dir()
-            .expect("Home dir is expanded.")
-            .to_string_lossy()
-    );
-    let ids = fs::read_to_string(history_path);
-    let history = match ids {
-        Ok(f) => f,
-        _ => "".to_string(),
+fn gen_history_path() -> String {
+    let home = match dirs::home_dir() {
+        Some(p) => p.to_string_lossy().into_owned(),
+        None => "/".to_string(),
     };
 
-    Ok(history)
+    format!("{}/.oscar_history", home)
+}
+
+fn get_history() -> String {
+    let history_path = gen_history_path();
+    let ids = fs::read_to_string(history_path);
+
+    match ids {
+        Ok(f) => f,
+        _ => "".to_string(),
+    }
 }
 
 fn update_history(episodes: &str) {
     info!("Updating history");
-    let history_path = format!(
-        "{}/.oscar_history",
-        dirs::home_dir()
-            .expect("Home dir is expanded.")
-            .to_string_lossy()
-    );
-    fs::write(history_path, episodes).expect("ID of first episode is written to .oscar_history");
+    let history_path = gen_history_path();
+    fs::write(history_path.as_str(), episodes).unwrap_or_else(|e| {
+        error!(
+            "An error occured updating the history at {}: {}",
+            history_path, e
+        )
+    });
 }
 
 fn fetch_video_info() -> Result<Vec<Episode>, Box<dyn std::error::Error>> {
@@ -142,22 +147,28 @@ fn fetch_video_info() -> Result<Vec<Episode>, Box<dyn std::error::Error>> {
 
 fn main() {
     let opts = Opt::from_args();
+
     if !opts.silent {
-        simple_logger::init().unwrap();
+        simple_logger::init().unwrap_or_else(|e| {
+            error!("Problem initiating logging: {}", e);
+        })
     }
-    let output = opts.output.to_str().expect("Output path as str.");
-    let episodes = fetch_video_info().expect("Returns a Vec of Episodes.");
+    let output = opts.output.to_string_lossy();
+
+    let episodes = fetch_video_info().unwrap_or_else(|e| {
+        error!("API request failed: {}", e);
+        process::exit(1)
+    });
+
     let client = reqwest::Client::new();
     let mut new: bool = false;
 
     for episode in episodes.iter() {
-        let history = get_history().expect("Got history.");
+        let history = get_history();
+
         if !history.contains(&episode.id) {
             new = true;
-            let video_obj = episode
-                .get_video_object()
-                .pop()
-                .expect("Returns the only element in the Vec which contains the URL.");
+            let url = episode.get_video_url();
 
             let name = format!(
                 "{}Sesame-Street-S{}E{}-{}.mp4",
@@ -170,15 +181,24 @@ fn main() {
             info!("Episode ID {}", episode.id);
 
             if !opts.dry_run {
-                let mut history = get_history().expect("Get history.");
-                let mut file = fs::File::create(&name).expect("Is valid file path.");
                 let id = format!("\n{}", &episode.id);
+                let mut history = get_history();
+                let mut file = fs::File::create(&name).unwrap_or_else(|_e| {
+                    error!("Had a problem downloading video to this path: {}", &name);
+                    process::exit(1)
+                });
+
                 info!("Downloading episode {}", &name);
-                let mut dl = client
-                    .get(&video_obj.url)
-                    .send()
-                    .expect("Initiates download of movie file.");
-                copy(&mut dl, &mut file).expect("Movie files are written.");
+                let mut movie = client.get(&url).send().unwrap_or_else(|e| {
+                    error!("Failed to download video: {}", e);
+                    process::exit(1)
+                });
+
+                copy(&mut movie, &mut file).unwrap_or_else(|e| {
+                    error!("Failed to write movie to location: {}", e);
+                    process::exit(1)
+                });
+
                 history.push_str(&id);
                 update_history(&history);
             }
