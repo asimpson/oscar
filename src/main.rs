@@ -10,6 +10,8 @@ use std::path::PathBuf;
 use std::process;
 use structopt::StructOpt;
 
+mod json;
+
 #[derive(StructOpt, Debug)]
 #[structopt(name = "oscar")]
 struct Opt {
@@ -21,51 +23,23 @@ struct Opt {
     #[structopt(short, long)]
     dry_run: bool,
 
+    /// Show slug. The show to download. Get slugs by running oscar list.
+    #[structopt(short = "S", long, default_value = "sesame-street")]
+    show_slug: String,
+
     /// Output directory
     #[structopt(short, long, parse(from_os_str), default_value = "/tmp/")]
     output: PathBuf,
+
+    #[structopt(subcommand)]
+    command: Option<Command>,
 }
 
-#[derive(Debug, Deserialize)]
-struct Payload {
-    items: Vec<Episode>,
-}
-
-#[derive(Debug, Deserialize)]
-struct Episode {
-    id: String,
-    nola_episode: String,
-    videos: Vec<Video>,
-    title: String,
-}
-
-impl Episode {
-    fn return_episode_number(&self) -> String {
-        self.nola_episode[6..8].to_string()
-    }
-
-    fn return_season_number(&self) -> String {
-        self.nola_episode[4..6].to_string()
-    }
-
-    fn return_slug(&self) -> String {
-        self.title.replace(" ", "-")
-    }
-
-    fn get_video_url(&self) -> String {
-        self.videos
-            .iter()
-            .filter(|x| x.format == "mp4" && x.bitrate == Some("720p".to_string()))
-            .map(|x| x.url.to_string())
-            .fold("".to_string(), |_acc, x| x)
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-struct Video {
-    url: String,
-    bitrate: Option<String>,
-    format: String,
+#[derive(StructOpt, Debug)]
+enum Command {
+    /// List available shows
+    #[structopt(name = "list")]
+    List,
 }
 
 #[cfg(test)]
@@ -77,7 +51,7 @@ mod tests {
         let video: Video = Video {
             url: "https://url.com".to_string(),
             bitrate: Some("720p".to_string()),
-            format: "mp4".to_string(),
+            format: Some("mp4".to_string()),
         };
         let test: Episode = Episode {
             id: "123".to_string(),
@@ -94,7 +68,7 @@ mod tests {
         let video: Video = Video {
             url: "https://url.com".to_string(),
             bitrate: Some("720p".to_string()),
-            format: "mp4".to_string(),
+            format: Some("mp4".to_string()),
         };
         let test: Episode = Episode {
             id: "123".to_string(),
@@ -104,6 +78,21 @@ mod tests {
         };
 
         assert_eq!(test.return_episode_number(), "21");
+
+        let dtvideo: Video = Video {
+            url: "https://url.com".to_string(),
+            bitrate: Some("720p".to_string()),
+            format: Some("mp4".to_string()),
+        };
+
+        let dtest: Episode = Episode {
+            id: "123".to_string(),
+            nola_episode: "DTIG101".to_string(),
+            videos: vec![dtvideo],
+            title: "Foo".to_string(),
+        };
+
+        assert_eq!(dtest.return_episode_number(), "1");
     }
 }
 
@@ -137,25 +126,54 @@ fn update_history(episodes: &str) {
     });
 }
 
-fn fetch_video_info() -> Result<Vec<Episode>, Box<dyn std::error::Error>> {
-    let url = "https://producerplayer.services.pbskids.org/show-list/?shows=sesame-street&shows_title=Sesame+Street&page=1&page_size=20&available=public&sort=-encored_on&type=episode";
+fn fetch_video_info(show_slug: &str) -> Result<Vec<json::Episode>, Box<dyn std::error::Error>> {
+    let url = format!("https://producerplayer.services.pbskids.org/show-list/?shows={}&page=1&page_size=20&available=public&sort=-encored_on&type=episode"
+                      , show_slug);
     let client = reqwest::Client::new();
-    let videos: Payload = client.get(url).send()?.json()?;
+    let videos: json::Payload = client.get(&url).send()?.json()?;
 
     Ok(videos.items)
 }
 
+fn fetch_show_list() -> Result<json::Collections, Box<dyn std::error::Error>> {
+    let url = "https://content.services.pbskids.org/v2/kidspbsorg/home";
+    let client = reqwest::Client::new();
+    let list: json::List = client.get(url).send()?.json()?;
+
+    Ok(list.collections)
+}
+
 fn main() {
     let opts = Opt::from_args();
+
+    match opts.command {
+        Some(Command::List) => {
+            let mut list = fetch_show_list().unwrap_or_else(|e| {
+                error!("List API request failed: {}", e);
+                process::exit(1)
+            });
+
+            list.tier_1.content.append(&mut list.tier_2.content);
+            list.tier_1.content.append(&mut list.tier_3.content);
+
+            for item in list.tier_1.content.iter() {
+                println!("{:?}", item.slug);
+            }
+
+            process::exit(0)
+        }
+        None => {}
+    }
 
     if !opts.silent {
         simple_logger::init().unwrap_or_else(|e| {
             error!("Problem initiating logging: {}", e);
         })
     }
+    let show = opts.show_slug;
     let output = opts.output.to_string_lossy();
 
-    let episodes = fetch_video_info().unwrap_or_else(|e| {
+    let episodes = fetch_video_info(&show).unwrap_or_else(|e| {
         error!("API request failed: {}", e);
         process::exit(1)
     });
@@ -170,13 +188,7 @@ fn main() {
             new = true;
             let url = episode.get_video_url();
 
-            let name = format!(
-                "{}Sesame-Street-S{}E{}-{}.mp4",
-                output,
-                episode.return_season_number(),
-                episode.return_episode_number(),
-                episode.return_slug()
-            );
+            let name = format!("{}{}-{}.mp4", output, &show, episode.return_slug());
             info!("Found episode {}", name);
             info!("Episode ID {}", episode.id);
 
