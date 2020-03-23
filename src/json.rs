@@ -61,7 +61,8 @@ impl Episode {
             .filter(|x| {
                 x.format == Some("mp4".to_string())
                     && (x.bitrate == Some("720p".to_string())
-                        || x.bitrate == Some("4500k".to_string()))
+                        || x.bitrate == Some("4500k".to_string())
+                        || x.bitrate == Some("1200k".to_string()))
             })
             .map(|x| x.url.to_string())
             .fold("".to_string(), |_acc, x| x)
