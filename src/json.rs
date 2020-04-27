@@ -42,12 +42,12 @@ pub struct Episode {
 }
 
 impl Episode {
-    fn return_episode_number(&self) -> String {
+    pub fn return_episode_number(&self) -> String {
         let length = self.nola_episode.len();
         self.nola_episode[6..length].to_string()
     }
 
-    fn return_season_number(&self) -> String {
+    pub fn return_season_number(&self) -> String {
         self.nola_episode[4..6].to_string()
     }
 
@@ -71,7 +71,7 @@ impl Episode {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Video {
-    url: String,
-    bitrate: Option<String>,
-    format: Option<String>,
+    pub url: String,
+    pub bitrate: Option<String>,
+    pub format: Option<String>,
 }

@@ -48,12 +48,12 @@ mod tests {
 
     #[test]
     fn season_number() {
-        let video: Video = Video {
+        let video: json::Video = json::Video {
             url: "https://url.com".to_string(),
             bitrate: Some("720p".to_string()),
             format: Some("mp4".to_string()),
         };
-        let test: Episode = Episode {
+        let test: json::Episode = json::Episode {
             id: "123".to_string(),
             nola_episode: "SAST4921".to_string(),
             videos: vec![video],
@@ -65,12 +65,12 @@ mod tests {
 
     #[test]
     fn episode_number() {
-        let video: Video = Video {
+        let video: json::Video = json::Video {
             url: "https://url.com".to_string(),
             bitrate: Some("720p".to_string()),
             format: Some("mp4".to_string()),
         };
-        let test: Episode = Episode {
+        let test: json::Episode = json::Episode {
             id: "123".to_string(),
             nola_episode: "SAST4921".to_string(),
             videos: vec![video],
@@ -79,13 +79,13 @@ mod tests {
 
         assert_eq!(test.return_episode_number(), "21");
 
-        let dtvideo: Video = Video {
+        let dtvideo: json::Video = json::Video {
             url: "https://url.com".to_string(),
             bitrate: Some("720p".to_string()),
             format: Some("mp4".to_string()),
         };
 
-        let dtest: Episode = Episode {
+        let dtest: json::Episode = json::Episode {
             id: "123".to_string(),
             nola_episode: "DTIG101".to_string(),
             videos: vec![dtvideo],
