@@ -40,10 +40,6 @@ enum Command {
     /// List available shows
     #[structopt(name = "list")]
     List,
-
-    /// Debug bitrates
-    #[structopt(name = "debug")]
-    Debug,
 }
 
 #[cfg(test)]
@@ -166,31 +162,6 @@ fn main() {
 
             process::exit(0)
         },
-        Some(Command::Debug) => {
-            let mut list = fetch_show_list().unwrap_or_else(|e| {
-                error!("List API request failed: {}", e);
-                process::exit(1)
-            });
-
-            list.tier_1.content.append(&mut list.tier_2.content);
-            list.tier_1.content.append(&mut list.tier_3.content);
-
-            for item in list.tier_1.content.iter() {
-              let episodes = fetch_video_info(&item.slug).unwrap_or_else(|e| {
-                  error!("API request failed: {}", e);
-                  process::exit(1)
-              });
-
-              for episode in episodes.iter() {
-                if (episode.get_video_url() == "") {
-                  println!("{:?}", item.title);
-                  println!("{:?}", episode.videos);
-                }
-              }
-            }
-
-            process::exit(0)
-        },
         None => {}
     }
 
@@ -243,6 +214,7 @@ fn main() {
 
                 history.push_str(&id);
                 update_history(&history);
+                println!("Downloaded {}", &name);
             }
         }
     }
