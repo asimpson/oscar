@@ -1,117 +1,29 @@
-# Based on the "trust" template v0.1.2
-# https://github.com/japaric/trust/tree/v0.1.2
-
-dist: trusty
 language: rust
-services: docker
-sudo: required
 
-env:
-  global:
-    - CRATE_NAME=oscar
-
-matrix:
+jobs:
   include:
-    # Android
-    # - env: TARGET=aarch64-linux-android DISABLE_TESTS=1
-    # - env: TARGET=arm-linux-androideabi DISABLE_TESTS=1
-    # - env: TARGET=armv7-linux-androideabi DISABLE_TESTS=1
-    # - env: TARGET=i686-linux-android DISABLE_TESTS=1
-    # - env: TARGET=x86_64-linux-android DISABLE_TESTS=1
-
-    # iOS
-    # - env: TARGET=aarch64-apple-ios DISABLE_TESTS=1
-    #   os: osx
-    # - env: TARGET=armv7-apple-ios DISABLE_TESTS=1
-    #   os: osx
-    # - env: TARGET=armv7s-apple-ios DISABLE_TESTS=1
-    #   os: osx
-    # - env: TARGET=i386-apple-ios DISABLE_TESTS=1
-    #   os: osx
-    # - env: TARGET=x86_64-apple-ios DISABLE_TESTS=1
-    #   os: osx
-
-    # Linux
-    - env: TARGET=aarch64-unknown-linux-gnu
-    - env: TARGET=arm-unknown-linux-gnueabi
-    - env: TARGET=armv7-unknown-linux-gnueabihf
-    # - env: TARGET=i686-unknown-linux-gnu
-    # - env: TARGET=i686-unknown-linux-musl
-    # - env: TARGET=mips-unknown-linux-gnu
-    # - env: TARGET=mips64-unknown-linux-gnuabi64
-    # - env: TARGET=mips64el-unknown-linux-gnuabi64
-    # - env: TARGET=mipsel-unknown-linux-gnu
-    # - env: TARGET=powerpc-unknown-linux-gnu
-    # - env: TARGET=powerpc64-unknown-linux-gnu
-    # - env: TARGET=powerpc64le-unknown-linux-gnu
-    # - env: TARGET=s390x-unknown-linux-gnu DISABLE_TESTS=1
     - env: TARGET=x86_64-unknown-linux-gnu
-    - env: TARGET=x86_64-unknown-linux-musl
-
-    # OSX
-    # - env: TARGET=i686-apple-darwin
-    #   os: osx
+      os: linux
     - env: TARGET=x86_64-apple-darwin
       os: osx
-
-    # *BSD
-    # - env: TARGET=i686-unknown-freebsd DISABLE_TESTS=1
-    # - env: TARGET=x86_64-unknown-freebsd DISABLE_TESTS=1
-    - env: TARGET=x86_64-unknown-netbsd DISABLE_TESTS=1
-
-    # Windows
     - env: TARGET=x86_64-pc-windows-gnu
-
-    # Bare metal
-    # These targets don't support std and as such are likely not suitable for
-    # most crates.
-    # - env: TARGET=thumbv6m-none-eabi
-    # - env: TARGET=thumbv7em-none-eabi
-    # - env: TARGET=thumbv7em-none-eabihf
-    # - env: TARGET=thumbv7m-none-eabi
-
-    # Testing other channels
-    # - env: TARGET=x86_64-unknown-linux-gnu
-      # rust: nightly
-    # - env: TARGET=x86_64-apple-darwin
-      # os: osx
-      # rust: nightly
-
-before_install:
-  - set -e
-  - rustup self update
-
-install:
-  - sh ci/install.sh
-  - source ~/.cargo/env || true
+      os: windows
 
 script:
-  - bash ci/script.sh
-
-after_script: set +e
+  - cargo build --release
 
 before_deploy:
-  - sh ci/before_deploy.sh
+  - mv ./target/release/oscar "oscar-$TARGET."
 
 deploy:
-  api_key:
+  token:
     secure: bKLcLL81nzHooDWFirca5oLCOV0lJ//1NIpJ4uCnRN2zgomPVgAlaDGCcu5Kzw+/Y4GnHAyFxMFfIwMF1R12LBUsACD3rM6g8iBV708XWLGcn5m0PzPMvGACUyhn+dlSrOI/sFoYVIugwm54lfR2zpz9TZA38KlPnLElgb/7izdioiVJVUStoUmK7Pyqa6/EzzWaqpXMh5xz7q83To50lXFMsj1nZ6wjUx1dmZNfWVqQsJOsDDXn/2bXHhJDzn22onlCgmDNBl/8505B3G+6BauEwZBY9Yxd642aMXQ9gOGAUeDiqPkofsk2G3Purf9Z8exqGMirB5+mP/o3bGZwfcJx3Bidya275F0+MhbyluS9+9QBgqCrGpcBrAjLGl7cymGbmjtwHUrUMRAf1rb7nNSHbKcyk7ppE5FI9NURtw7UfdKJX3/uxuo+NQC/2P6gnoL8LjVIyEAABVwVMbyKKndE8aShonuW/fUpFbpNTY0qkt3QjuF3qYjq5Dhu6WYTuiQB4o6IhS10p5cxrBdSYG/QmSvHM1EDmUDNtLy1HeZcqS4P44L6DCFomkJ7goOAWJjaYjQysNaA61b3XxqE2k50ciYvrO1vFIVD2guCKqMrZwU2LD4DHlbd7vdSqtob0tl5QabSvFPaXHztT3Ef/SdFW4VhwZbWwl9cX/JJ5O8=
   file_glob: true
-  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
+  file: oscar-$TARGET.*
   on:
-    # TODO Here you can pick which targets will generate binary releases
-    # In this example, there are some targets that are tested using the stable
-    # and nightly channels. This condition makes sure there is only one release
-    # for such targets and that's generated using the stable channel
-    condition: $TRAVIS_RUST_VERSION = stable
     tags: true
   provider: releases
-  skip_cleanup: true
-
-cache: cargo
-before_cache:
-  # Travis can't cache files that are not readable by "others"
-  - chmod -R a+r $HOME/.cargo
+  cleanup: true
 
 branches:
   only:
