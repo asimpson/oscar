@@ -1,9 +1,9 @@
 [package]
 name = "oscar"
-version = "0.1.3"
+version = "0.1.5"
 authors = ["Adam Simpson <adam@heysparkbox.com>"]
 edition = "2018"
-description = "A CLI application to download Sesame Street videos from PBS. Ideally run in cron or another scheduler."
+description = "A CLI application to download videos from PBS. Ideally run in cron or another scheduler."
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/asimpson/oscar"
