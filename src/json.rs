@@ -42,30 +42,54 @@ pub struct Episode {
 }
 
 impl Episode {
-    pub fn return_episode_number(&self) -> String {
-        let length = self.nola_episode.len();
-        self.nola_episode[6..length].to_string()
-    }
-
-    pub fn return_season_number(&self) -> String {
-        self.nola_episode[4..6].to_string()
-    }
-
     pub fn return_slug(&self) -> String {
         self.title.replace(" ", "-").replace("/", "-")
     }
 
     pub fn get_video_url(&self) -> String {
-        self.videos
+        let mut url = String::new();
+        let videos: Vec<&Video> = self
+            .videos
             .iter()
+            .filter(|x| x.format == Some("mp4".to_string()))
             .filter(|x| {
-                x.format == Some("mp4".to_string())
-                    && (x.bitrate == Some("720p".to_string())
-                        || x.bitrate == Some("4500k".to_string())
-                        || x.bitrate == Some("1200k".to_string()))
+                x.bitrate == Some("720p".to_string())
+                    || x.bitrate == Some("4500k".to_string())
+                    || x.bitrate == Some("1200k".to_string())
             })
+            .collect();
+
+        let preferred_quality: String = videos
+            .iter()
+            .filter(|x| x.bitrate == Some("720p".to_string()))
             .map(|x| x.url.to_string())
-            .fold("".to_string(), |_acc, x| x)
+            .collect();
+
+        let second_quality: String = videos
+            .iter()
+            .filter(|x| x.bitrate == Some("4500k".to_string()))
+            .map(|x| x.url.to_string())
+            .collect();
+
+        let third_quality: String = videos
+            .iter()
+            .filter(|x| x.bitrate == Some("1200k".to_string()))
+            .map(|x| x.url.to_string())
+            .collect();
+
+        if third_quality.len() > 0 {
+          url = third_quality;
+        }
+
+        if second_quality.len() > 0  {
+          url = second_quality;
+        }
+
+        if preferred_quality.len() > 0 {
+          url = preferred_quality;
+        }
+
+        return url;
     }
 }
 
@@ -74,4 +98,46 @@ pub struct Video {
     pub url: String,
     pub bitrate: Option<String>,
     pub format: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn episode_quality() {
+        let video1: Video = Video {
+            url: "https://1200.com".to_string(),
+            bitrate: Some("1200k".to_string()),
+            format: Some("mp4".to_string()),
+        };
+        let video2: Video = Video {
+            url: "https://900k.com".to_string(),
+            bitrate: Some("900k".to_string()),
+            format: Some("mp4".to_string()),
+        };
+        let video3: Video = Video {
+            url: "https://720.com".to_string(),
+            bitrate: Some("720p".to_string()),
+            format: Some("mp4".to_string()),
+        };
+        let video4: Video = Video {
+            url: "https://second-1200k.com".to_string(),
+            bitrate: Some("1200k".to_string()),
+            format: Some("mp4".to_string()),
+        };
+        let video5: Video = Video {
+            url: "https://last.com".to_string(),
+            bitrate: Some("1000k".to_string()),
+            format: Some("h264".to_string()),
+        };
+        let test: Episode = Episode {
+            id: "123".to_string(),
+            nola_episode: "SAST4921".to_string(),
+            videos: vec![video1, video2, video3, video4, video5],
+            title: "Foo".to_string(),
+        };
+
+        assert_eq!(test.get_video_url(), "https://720.com");
+    }
 }

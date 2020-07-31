@@ -3,7 +3,6 @@ extern crate reqwest;
 extern crate simple_logger;
 use log::error;
 use log::info;
-use serde::Deserialize;
 use std::fs;
 use std::io::copy;
 use std::path::PathBuf;
@@ -40,60 +39,6 @@ enum Command {
     /// List available shows
     #[structopt(name = "list")]
     List,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn season_number() {
-        let video: json::Video = json::Video {
-            url: "https://url.com".to_string(),
-            bitrate: Some("720p".to_string()),
-            format: Some("mp4".to_string()),
-        };
-        let test: json::Episode = json::Episode {
-            id: "123".to_string(),
-            nola_episode: "SAST4921".to_string(),
-            videos: vec![video],
-            title: "Foo".to_string(),
-        };
-
-        assert_eq!(test.return_season_number(), "49");
-    }
-
-    #[test]
-    fn episode_number() {
-        let video: json::Video = json::Video {
-            url: "https://url.com".to_string(),
-            bitrate: Some("720p".to_string()),
-            format: Some("mp4".to_string()),
-        };
-        let test: json::Episode = json::Episode {
-            id: "123".to_string(),
-            nola_episode: "SAST4921".to_string(),
-            videos: vec![video],
-            title: "Foo".to_string(),
-        };
-
-        assert_eq!(test.return_episode_number(), "21");
-
-        let dtvideo: json::Video = json::Video {
-            url: "https://url.com".to_string(),
-            bitrate: Some("720p".to_string()),
-            format: Some("mp4".to_string()),
-        };
-
-        let dtest: json::Episode = json::Episode {
-            id: "123".to_string(),
-            nola_episode: "DTIG101".to_string(),
-            videos: vec![dtvideo],
-            title: "Foo".to_string(),
-        };
-
-        assert_eq!(dtest.return_episode_number(), "1");
-    }
 }
 
 fn gen_history_path() -> String {
@@ -161,7 +106,7 @@ fn main() {
             }
 
             process::exit(0)
-        },
+        }
         None => {}
     }
 
