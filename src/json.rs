@@ -47,8 +47,7 @@ impl Episode {
     }
 
     pub fn get_video_url(&self) -> String {
-        let mut url = String::new();
-        let videos: Vec<&Video> = self
+        let mut videos: Vec<&Video> = self
             .videos
             .iter()
             .filter(|x| x.format == Some("mp4".to_string()))
@@ -59,37 +58,9 @@ impl Episode {
             })
             .collect();
 
-        let preferred_quality: String = videos
-            .iter()
-            .filter(|x| x.bitrate == Some("720p".to_string()))
-            .map(|x| x.url.to_string())
-            .collect();
+        videos.sort_by(|a, b| a.quality_rating().cmp(&b.quality_rating()));
 
-        let second_quality: String = videos
-            .iter()
-            .filter(|x| x.bitrate == Some("4500k".to_string()))
-            .map(|x| x.url.to_string())
-            .collect();
-
-        let third_quality: String = videos
-            .iter()
-            .filter(|x| x.bitrate == Some("1200k".to_string()))
-            .map(|x| x.url.to_string())
-            .collect();
-
-        if third_quality.len() > 0 {
-          url = third_quality;
-        }
-
-        if second_quality.len() > 0  {
-          url = second_quality;
-        }
-
-        if preferred_quality.len() > 0 {
-          url = preferred_quality;
-        }
-
-        return url;
+        return videos[0].proper_url();
     }
 }
 
@@ -98,6 +69,28 @@ pub struct Video {
     pub url: String,
     pub bitrate: Option<String>,
     pub format: Option<String>,
+}
+
+impl Video {
+    fn quality_rating(&self) -> u8 {
+        if self.bitrate == Some("720p".to_string()) {
+            return 1;
+        }
+
+        if self.bitrate == Some("4500k".to_string()) {
+            return 2;
+        }
+
+        if self.bitrate == Some("1200k".to_string()) {
+            return 3;
+        }
+
+        return 99;
+    }
+
+    fn proper_url(&self) -> String {
+        return self.url.to_string();
+    }
 }
 
 #[cfg(test)]
