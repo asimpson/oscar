@@ -23,7 +23,7 @@ deploy:
   on:
     tags: true
   provider: releases
-  cleanup: true
+  skip_cleanup: true
 
 branches:
   only:
