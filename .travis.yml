@@ -36,7 +36,8 @@ deploy:
   on:
     tags: true
   provider: releases
-  cleanup: false
+  skip_cleanup: true
+  # cleanup: false
 
 branches:
   only:
