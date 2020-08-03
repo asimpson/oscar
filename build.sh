@@ -12,14 +12,18 @@ fi
 
 cargo build --target="${TARGET}" --release
 
+ls -al ./target/"${TARGET}"/release/
+
 if [ "${TARGET}" = "x86_64-pc-windows-gnu" ]
 then
-  mv ./target/"${TARGET}"/release/oscar "oscar.exe"
   export OSCAR_NAME="oscar.exe"
+  mv ./target/"${TARGET}"/release/oscar "${OSCAR_NAME}"
 fi
 
 if [ "${TARGET}" != "x86_64-pc-windows-gnu" ]
 then
-  mv ./target/"${TARGET}"/release/oscar "oscar-${TARGET}"
   export OSCAR_NAME="oscar-${TARGET}"
+  mv ./target/"${TARGET}"/release/oscar "${OSCAR_NAME}"
 fi
+
+ls -al .

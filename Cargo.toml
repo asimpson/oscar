@@ -1,6 +1,6 @@
 [package]
 name = "oscar"
-version = "0.1.14"
+version = "0.1.15"
 authors = ["Adam Simpson <adam@heysparkbox.com>"]
 edition = "2018"
 description = "A CLI application to download videos from PBS. Ideally run in cron or another scheduler."
