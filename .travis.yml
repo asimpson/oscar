@@ -25,14 +25,10 @@ install: skip
 script:
   - ./build.sh
 
-before_deploy:
-  - mv ./target/"${TARGET}"/release/oscar "oscar-${TARGET}"
-
 deploy:
   token:
     secure: bKLcLL81nzHooDWFirca5oLCOV0lJ//1NIpJ4uCnRN2zgomPVgAlaDGCcu5Kzw+/Y4GnHAyFxMFfIwMF1R12LBUsACD3rM6g8iBV708XWLGcn5m0PzPMvGACUyhn+dlSrOI/sFoYVIugwm54lfR2zpz9TZA38KlPnLElgb/7izdioiVJVUStoUmK7Pyqa6/EzzWaqpXMh5xz7q83To50lXFMsj1nZ6wjUx1dmZNfWVqQsJOsDDXn/2bXHhJDzn22onlCgmDNBl/8505B3G+6BauEwZBY9Yxd642aMXQ9gOGAUeDiqPkofsk2G3Purf9Z8exqGMirB5+mP/o3bGZwfcJx3Bidya275F0+MhbyluS9+9QBgqCrGpcBrAjLGl7cymGbmjtwHUrUMRAf1rb7nNSHbKcyk7ppE5FI9NURtw7UfdKJX3/uxuo+NQC/2P6gnoL8LjVIyEAABVwVMbyKKndE8aShonuW/fUpFbpNTY0qkt3QjuF3qYjq5Dhu6WYTuiQB4o6IhS10p5cxrBdSYG/QmSvHM1EDmUDNtLy1HeZcqS4P44L6DCFomkJ7goOAWJjaYjQysNaA61b3XxqE2k50ciYvrO1vFIVD2guCKqMrZwU2LD4DHlbd7vdSqtob0tl5QabSvFPaXHztT3Ef/SdFW4VhwZbWwl9cX/JJ5O8=
-  file_glob: true
-  file: oscar-"${TARGET}"*
+  file: "${OSCAR_NAME}"
   on:
     tags: true
   provider: releases

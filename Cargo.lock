@@ -731,7 +731,7 @@ dependencies = [
 
 [[package]]
 name = "oscar"
-version = "0.1.6"
+version = "0.1.13"
 dependencies = [
  "dirs 2.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
