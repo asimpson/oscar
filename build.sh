@@ -13,14 +13,6 @@ cargo build --target="${TARGET}" --release
 
 ls -al ./target/"${TARGET}"/release/
 
-if [ "${TARGET}" = "x86_64-pc-windows-gnu" ]
-then
-  mv ./target/"${TARGET}"/release/oscar "${OSCAR_NAME}"
-fi
-
-if [ "${TARGET}" != "x86_64-pc-windows-gnu" ]
-then
-  mv ./target/"${TARGET}"/release/oscar "${OSCAR_NAME}"
-fi
+mv ./target/"${TARGET}"/release/oscar "${OSCAR_NAME}"
 
 ls -al .

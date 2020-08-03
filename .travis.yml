@@ -3,11 +3,11 @@ language: rust
 jobs:
   include:
     - env:
-        OSCAR_NAME="oscar-$TARGET"
+        OSCAR_NAME=oscar-x86_64-unknown-linux-gnu
         TARGET=x86_64-unknown-linux-gnu
       os: linux
     - env:
-        OSCAR_NAME="oscar-$TARGET"
+        OSCAR_NAME=oscar-x86_64-unknown-linux-musl
         TARGET=x86_64-unknown-linux-musl
       os: linux
       addons:
@@ -15,21 +15,21 @@ jobs:
           packages:
             - musl-tools
     - env:
-        OSCAR_NAME="oscar-$TARGET"
+        OSCAR_NAME=oscar-arm-unknown-linux-gnueabihf
         TARGET=arm-unknown-linux-gnueabihf
         CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
       os: linux
     - env:
-        OSCAR_NAME="oscar-$TARGET"
+        OSCAR_NAME=oscar-aarch64-unknown-linux-gnu
         TARGET=aarch64-unknown-linux-gnu
       os: linux
       arch: arm64
     - env:
-        OSCAR_NAME="oscar-$TARGET"
+        OSCAR_NAME=oscar-x86_64-apple-darwin
         TARGET=x86_64-apple-darwin
       os: osx
     - env:
-        OSCAR_NAME="oscar.exe"
+        OSCAR_NAME=oscar-x86_64-pc-windows-gnu.exe
         TARGET=x86_64-pc-windows-gnu
       os: windows
 
