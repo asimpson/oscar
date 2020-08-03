@@ -11,8 +11,4 @@ fi
 
 cargo build --target="${TARGET}" --release
 
-ls -al ./target/"${TARGET}"/release/
-
 mv ./target/"${TARGET}"/release/oscar "${OSCAR_NAME}"
-
-ls -al .
