@@ -91,23 +91,20 @@ fn fetch_show_list() -> Result<json::Collections, Box<dyn std::error::Error>> {
 fn main() {
     let opts = Opt::from_args();
 
-    match opts.command {
-        Some(Command::List) => {
-            let mut list = fetch_show_list().unwrap_or_else(|e| {
-                error!("List API request failed: {}", e);
-                process::exit(1)
-            });
+    if let Some(Command::List) = opts.command {
+        let mut list = fetch_show_list().unwrap_or_else(|e| {
+            error!("List API request failed: {}", e);
+            process::exit(1)
+        });
 
-            list.tier_1.content.append(&mut list.tier_2.content);
-            list.tier_1.content.append(&mut list.tier_3.content);
+        list.tier_1.content.append(&mut list.tier_2.content);
+        list.tier_1.content.append(&mut list.tier_3.content);
 
-            for item in list.tier_1.content.iter() {
-                println!("{:?}", item.slug);
-            }
-
-            process::exit(0)
+        for item in list.tier_1.content.iter() {
+            println!("{:?}", item.slug);
         }
-        None => {}
+
+        process::exit(0)
     }
 
     if !opts.silent {

@@ -60,7 +60,7 @@ impl Episode {
 
         videos.sort_by(|a, b| a.quality_rating().cmp(&b.quality_rating()));
 
-        return videos[0].proper_url();
+        videos[0].proper_url()
     }
 }
 
@@ -85,11 +85,11 @@ impl Video {
             return 3;
         }
 
-        return 99;
+        99
     }
 
     fn proper_url(&self) -> String {
-        return self.url.to_string();
+        self.url.to_string()
     }
 }
 
