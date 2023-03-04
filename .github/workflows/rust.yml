@@ -17,6 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: cargo build --verbose --release
+      run: cargo build -rv
     - name: Dry run
-      run: oscar -d
+      run: ./target/release/oscar -d
