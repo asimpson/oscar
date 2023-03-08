@@ -74,7 +74,7 @@ fn update_history(episodes: &str) {
 fn fetch_video_info(show_slug: &str) -> Result<Vec<json::Episode>, Box<dyn std::error::Error>> {
     let url = format!("https://producerplayer.services.pbskids.org/show-list/?shows={}&page=1&page_size=20&available=public&sort=-encored_on&type=full_length"
                       , show_slug);
-    let client = reqwest::Client::new();
+    let client = reqwest::blocking::Client::new();
     let videos: json::Payload = client.get(&url).send()?.json()?;
 
     Ok(videos.items)
